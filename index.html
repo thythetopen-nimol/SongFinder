@@ -213,7 +213,7 @@ footer {
 </header>
 
 <main class="song-list" id="songList"></main>
-<footer>© 2025 Song Finder | Built by Thet 🎧</footer>
+<footer>© 2026 Song Finder | Built by THET</footer>
 
 <!-- ADMIN BUTTONS -->
 <div id="toggleWrapper">
@@ -404,9 +404,7 @@ function toggleFullscreen(){
     quickLyrics.style.fontSize = contentFontSize+'px';
   }
 }
-</script>
-
-<!-- strat -TEXT → JSON TOOL (DRAGGABLE BUTTON + POPUP, Kantumruy Pro) -->
+<!-- TEXT → JSON TOOL (DRAGGABLE BUTTON + POPUP, Kantumruy Pro, Circle Buttons, Clear Inputs) -->
 <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
 
@@ -432,9 +430,7 @@ function toggleFullscreen(){
   box-shadow: 0 8px 15px rgba(0,0,0,0.25);
   user-select: none;
 }
-#jsonToolBtn:hover {
-  background: rgba(89,166,255,0.35);
-}
+#jsonToolBtn:hover { background: rgba(89,166,255,0.35); }
 
 /* Popup Box */
 #jsonTool {
@@ -467,14 +463,9 @@ function toggleFullscreen(){
   cursor: grab;
   user-select: none;
 }
-#jsonTool .header:active {
-  cursor: grabbing;
-}
-#jsonTool .header span {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+#jsonTool .header:active { cursor: grabbing; }
+#jsonTool .header span { display: flex; align-items: center; gap: 8px; }
+#jsonTool .header .header-buttons { display: flex; gap: 8px; }
 #jsonTool .header button {
   background: none;
   border: none;
@@ -502,20 +493,32 @@ function toggleFullscreen(){
   font-size: 14px;
   font-family: 'Kantumruy Pro', sans-serif;
 }
-#jsonTool textarea {
-  min-height: 140px;
-  resize: vertical;
+#jsonTool textarea { min-height: 140px; resize: vertical; }
+
+/* Circle Buttons */
+.button-group {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
 }
-#jsonTool button.generate {
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-  background: #59a6ff;
+.button-group button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.08);
   color: #fff;
+  font-size: 20px;
   cursor: pointer;
-  font-weight: 500;
-  font-family: 'Kantumruy Pro', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  transition: 0.3s;
 }
+.button-group button:hover { background: rgba(89,166,255,0.35); }
+
+/* JSON Output */
 #jsonTool pre {
   background: rgba(0,0,0,0.45);
   padding: 12px;
@@ -539,16 +542,30 @@ function toggleFullscreen(){
       <i class="ri-file-text-line"></i>
       Text → JSON
     </span>
-    <button onclick="toggleJsonTool()">
-      <i class="ri-close-circle-line"></i>
-    </button>
+    <div class="header-buttons">
+      <button title="Clear Inputs" onclick="clearInputs()">
+        <i class="ri-eraser-fill"></i>
+      </button>
+      <button onclick="toggleJsonTool()" title="Close">
+        <i class="ri-close-circle-line"></i>
+      </button>
+    </div>
   </div>
 
   <div class="content">
     <input id="jtTitle" placeholder="Title">
     <input id="jtArtist" placeholder="Artist">
     <textarea id="jtLyrics" placeholder="Lyrics (multiline)"></textarea>
-    <button class="generate" onclick="generateJSON()">Generate JSON</button>
+
+    <div class="button-group">
+      <button class="generate" title="Generate JSON" onclick="generateJSON()">
+        <i class="ri-file-list-3-line"></i>
+      </button>
+      <button class="copyBtn" title="Copy JSON" onclick="copyJSON()">
+        <i class="ri-file-copy-2-fill"></i>
+      </button>
+    </div>
+
     <pre id="jtOutput"></pre>
   </div>
 </div>
@@ -564,7 +581,7 @@ function toggleJsonTool() {
     jsonTool.style.display === 'flex' ? 'none' : 'flex';
 }
 
-/* Generate JSON with leading comma (single object) */
+/* Generate JSON with leading comma */
 function generateJSON() {
   const obj = {
     title: jtTitle.value.trim(),
@@ -572,6 +589,22 @@ function generateJSON() {
     lyrics: jtLyrics.value.trim()
   };
   jtOutput.textContent = ",\n" + JSON.stringify(obj, null, 2);
+}
+
+/* Copy JSON to clipboard */
+function copyJSON() {
+  if (!jtOutput.textContent) return;
+  navigator.clipboard.writeText(jtOutput.textContent)
+    .then(() => alert("Copied to clipboard!"))
+    .catch(err => alert("Copy failed: " + err));
+}
+
+/* Clear input fields and output */
+function clearInputs() {
+  jtTitle.value = '';
+  jtArtist.value = '';
+  jtLyrics.value = '';
+  jtOutput.textContent = '';
 }
 
 /* ---------------- BUTTON DRAG ---------------- */
@@ -584,7 +617,6 @@ jsonBtn.addEventListener('mousedown', e => {
   btnDX = e.clientX - jsonBtn.offsetLeft;
   btnDY = e.clientY - jsonBtn.offsetTop;
 });
-
 document.addEventListener('mousemove', e => {
   if (!btnDragging) return;
   btnMoved = true;
@@ -593,10 +625,9 @@ document.addEventListener('mousemove', e => {
   jsonBtn.style.right = 'auto';
   jsonBtn.style.bottom = 'auto';
 });
-
 document.addEventListener('mouseup', () => btnDragging = false);
 
-/* Touch support */
+/* Touch support for button */
 jsonBtn.addEventListener('touchstart', e => {
   const t = e.touches[0];
   btnDragging = true;
@@ -629,13 +660,11 @@ header.addEventListener('mousedown', e => {
   popDY = e.clientY - jsonTool.offsetTop;
   jsonTool.style.transform = 'none';
 });
-
 document.addEventListener('mousemove', e => {
   if (!popupDragging) return;
   jsonTool.style.left = e.clientX - popDX + 'px';
   jsonTool.style.top = e.clientY - popDY + 'px';
 });
-
 document.addEventListener('mouseup', () => popupDragging = false);
 
 /* Touch support for popup */
@@ -655,9 +684,11 @@ document.addEventListener('touchmove', e => {
 document.addEventListener('touchend', () => popupDragging = false);
 </script>
 
+
     <!-- end TEXT → JSON TOOL (DRAGGABLE BUTTON) -->
 
 </body>
 </html>
+
 
 
