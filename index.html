@@ -406,7 +406,10 @@ function toggleFullscreen(){
 }
 </script>
 
-  <!-- TEXT → JSON TOOL (DRAGGABLE BUTTON) -->
+<!-- strat -TEXT → JSON TOOL (DRAGGABLE BUTTON + POPUP, Kantumruy Pro) -->
+<link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+
 <style>
 /* Floating Draggable Button */
 #jsonToolBtn {
@@ -449,10 +452,10 @@ function toggleFullscreen(){
   border-radius: 16px;
   color: #fff;
   z-index: 10000;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Kantumruy Pro', sans-serif;
 }
 
-/* Header */
+/* Popup Header (Drag Handle) */
 #jsonTool .header {
   display: flex;
   justify-content: space-between;
@@ -461,6 +464,11 @@ function toggleFullscreen(){
   background: rgba(255,255,255,0.06);
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
+  cursor: grab;
+  user-select: none;
+}
+#jsonTool .header:active {
+  cursor: grabbing;
 }
 #jsonTool .header span {
   display: flex;
@@ -481,6 +489,7 @@ function toggleFullscreen(){
   display: flex;
   flex-direction: column;
   gap: 10px;
+  font-family: 'Kantumruy Pro', sans-serif;
 }
 #jsonTool input,
 #jsonTool textarea {
@@ -505,6 +514,7 @@ function toggleFullscreen(){
   color: #fff;
   cursor: pointer;
   font-weight: 500;
+  font-family: 'Kantumruy Pro', sans-serif;
 }
 #jsonTool pre {
   background: rgba(0,0,0,0.45);
@@ -513,6 +523,7 @@ function toggleFullscreen(){
   font-size: 13px;
   overflow-x: auto;
   white-space: pre-wrap;
+  font-family: 'Kantumruy Pro', sans-serif;
 }
 </style>
 
@@ -521,7 +532,7 @@ function toggleFullscreen(){
   <i class="ri-file-text-line"></i>
 </button>
 
-<!-- Popup Tool -->
+<!-- Draggable Popup Tool -->
 <div id="jsonTool">
   <div class="header">
     <span>
@@ -545,6 +556,7 @@ function toggleFullscreen(){
 <script>
 const jsonTool = document.getElementById('jsonTool');
 const jsonBtn = document.getElementById('jsonToolBtn');
+const header = jsonTool.querySelector('.header');
 
 /* Toggle popup */
 function toggleJsonTool() {
@@ -552,71 +564,100 @@ function toggleJsonTool() {
     jsonTool.style.display === 'flex' ? 'none' : 'flex';
 }
 
-/* Generate JSON */
+/* Generate JSON with leading comma (single object) */
 function generateJSON() {
-  const data = {
+  const obj = {
     title: jtTitle.value.trim(),
     artist: jtArtist.value.trim(),
     lyrics: jtLyrics.value.trim()
   };
-  jtOutput.textContent = JSON.stringify(data, null, 2);
+  jtOutput.textContent = ",\n" + JSON.stringify(obj, null, 2);
 }
 
-/* Draggable BUTTON (click-safe) */
-let draggingBtn = false;
-let moved = false;
-let btnOffsetX = 0;
-let btnOffsetY = 0;
+/* ---------------- BUTTON DRAG ---------------- */
+let btnDragging = false, btnMoved = false;
+let btnDX = 0, btnDY = 0;
 
 jsonBtn.addEventListener('mousedown', e => {
-  draggingBtn = true;
-  moved = false;
-  btnOffsetX = e.clientX - jsonBtn.offsetLeft;
-  btnOffsetY = e.clientY - jsonBtn.offsetTop;
+  btnDragging = true;
+  btnMoved = false;
+  btnDX = e.clientX - jsonBtn.offsetLeft;
+  btnDY = e.clientY - jsonBtn.offsetTop;
 });
 
 document.addEventListener('mousemove', e => {
-  if (!draggingBtn) return;
-  moved = true;
-  jsonBtn.style.left = e.clientX - btnOffsetX + 'px';
-  jsonBtn.style.top = e.clientY - btnOffsetY + 'px';
+  if (!btnDragging) return;
+  btnMoved = true;
+  jsonBtn.style.left = e.clientX - btnDX + 'px';
+  jsonBtn.style.top = e.clientY - btnDY + 'px';
   jsonBtn.style.right = 'auto';
   jsonBtn.style.bottom = 'auto';
 });
 
-document.addEventListener('mouseup', () => {
-  if (!draggingBtn) return;
-  draggingBtn = false;
-});
+document.addEventListener('mouseup', () => btnDragging = false);
 
 /* Touch support */
 jsonBtn.addEventListener('touchstart', e => {
   const t = e.touches[0];
-  draggingBtn = true;
-  moved = false;
-  btnOffsetX = t.clientX - jsonBtn.offsetLeft;
-  btnOffsetY = t.clientY - jsonBtn.offsetTop;
+  btnDragging = true;
+  btnMoved = false;
+  btnDX = t.clientX - jsonBtn.offsetLeft;
+  btnDY = t.clientY - jsonBtn.offsetTop;
 });
-
 document.addEventListener('touchmove', e => {
-  if (!draggingBtn) return;
+  if (!btnDragging) return;
   const t = e.touches[0];
-  moved = true;
-  jsonBtn.style.left = t.clientX - btnOffsetX + 'px';
-  jsonBtn.style.top = t.clientY - btnOffsetY + 'px';
+  btnMoved = true;
+  jsonBtn.style.left = t.clientX - btnDX + 'px';
+  jsonBtn.style.top = t.clientY - btnDY + 'px';
   jsonBtn.style.right = 'auto';
   jsonBtn.style.bottom = 'auto';
 });
+document.addEventListener('touchend', () => btnDragging = false);
 
-document.addEventListener('touchend', () => draggingBtn = false);
-
-/* Open popup only if NOT dragged */
+/* Click vs Drag */
 jsonBtn.addEventListener('click', () => {
-  if (!moved) toggleJsonTool();
+  if (!btnMoved) toggleJsonTool();
 });
+
+/* ---------------- POPUP DRAG ---------------- */
+let popupDragging = false, popDX = 0, popDY = 0;
+
+header.addEventListener('mousedown', e => {
+  popupDragging = true;
+  popDX = e.clientX - jsonTool.offsetLeft;
+  popDY = e.clientY - jsonTool.offsetTop;
+  jsonTool.style.transform = 'none';
+});
+
+document.addEventListener('mousemove', e => {
+  if (!popupDragging) return;
+  jsonTool.style.left = e.clientX - popDX + 'px';
+  jsonTool.style.top = e.clientY - popDY + 'px';
+});
+
+document.addEventListener('mouseup', () => popupDragging = false);
+
+/* Touch support for popup */
+header.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  popupDragging = true;
+  popDX = t.clientX - jsonTool.offsetLeft;
+  popDY = t.clientY - jsonTool.offsetTop;
+  jsonTool.style.transform = 'none';
+});
+document.addEventListener('touchmove', e => {
+  if (!popupDragging) return;
+  const t = e.touches[0];
+  jsonTool.style.left = t.clientX - popDX + 'px';
+  jsonTool.style.top = t.clientY - popDY + 'px';
+});
+document.addEventListener('touchend', () => popupDragging = false);
 </script>
+
     <!-- end TEXT → JSON TOOL (DRAGGABLE BUTTON) -->
 
 </body>
 </html>
+
 
