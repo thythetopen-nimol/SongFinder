@@ -205,7 +205,7 @@ footer {
 <body>
 
 <header>
-  <h1><i class="ri-file-music-line"></i> Song Finder</h1>
+  <h1><i class="ri-music-ai-line"></i> Song Finder</h1>
   <div class="search-bar-wrapper">
     <i class="ri-search-eye-line"></i>
     <input type="text" id="searchInput" placeholder="Search song title..." onkeyup="filterSongs()">
@@ -241,7 +241,7 @@ footer {
 <!-- QUICK VIEW -->
 <div class="draggable-box" id="quickBox">
   <div class="draggable-header">
-    <span><i class="ri-file-music-line"></i> Quick View</span>
+    <span><i class="ri-music-ai-line"></i> Quick View</span>
     <div>
       <button onclick="increaseFont()">A+</button>
       <button onclick="decreaseFont()">A-</button>
@@ -285,7 +285,7 @@ function displaySongs(){
     div.className='song-card';
     div.innerHTML=`
       <div class="song-info" onclick="openQuick(${index})">
-        <i class="ri-file-music-line"></i>
+        <i class="ri-music-ai-line"></i>
         <span class="song-title">${song.title}</span>
       </div>
       <div class="download-btns">
@@ -690,6 +690,7 @@ document.addEventListener('touchend', () => popupDragging = false);
 
 </body>
 </html>
+
 
 
 
